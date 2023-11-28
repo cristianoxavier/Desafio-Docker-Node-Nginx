@@ -2,7 +2,7 @@ version: '3'
 
 services:
 
-  app:
+  node:
     build: 
       context: ./node
     container_name: app
@@ -21,11 +21,26 @@ services:
     volumes: 
     - ./mysql:/docker-entrypoint-initdb.d/
     container_name: db
+    command: --innodb-use-native-aio=0
     environment:
       - MYSQL_DATABASE=nodedb
       - MYSQL_ROOT_PASSWORD=root
     networks:
       - node-network
+
+  proxy:
+    build: 
+      context: ./nginx
+    container_name: proxy
+    tty: true
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - "8080:80"
+    networks:
+      - node-network
+    depends_on:
+      - node
 
 networks:
   node-network:
